@@ -1,7 +1,9 @@
 package world.byzance.vista_api;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -32,7 +34,12 @@ public class MediaManager {
         }
     }
     public void setFolderPath(String newfolderPath){
+
         folderPath = newfolderPath;
+        File folder = new File(newfolderPath);
+        if (!folder.exists()) {
+            folder.mkdirs();
+        }
     }
     //get Json of current media List saved and populate mediaList
     public ArrayList<Media> getCurrentContent() {
@@ -72,6 +79,10 @@ public class MediaManager {
         cleanOldMedia();
         mediaList = newMediaList;
         saveNewMediaList(jsonArray);
+        Log.d(TAG,"update complete");
+        Intent intent = new Intent("updateStatus");
+        intent.putExtra("status", "complete");
+        LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
     }
 
     //Test if a media is a new media or need an upate

@@ -1,7 +1,11 @@
 package world.byzance.vista_api;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -37,6 +41,8 @@ public class VistaApi {
         Httpclient = new OkHttpClient();
         updateDate = new UpdateDate(context);
         mediaManager = new MediaManager(context);
+        LocalBroadcastManager.getInstance(context).registerReceiver(updateCompleteReceiver,
+                new IntentFilter("updateStatus"));
     }
     interface OnRequestComplete {
         void OnRequestComplete(JSONArray response);
@@ -55,7 +61,7 @@ public class VistaApi {
                     JSONObject dateJson = response.getJSONObject(0);
                     String dateString = (String) dateJson.get("Last_Update");
                     if(!updateDate.isUpToDate(dateString)){
-                        updateDate.saveTheDate(dateString);
+                        updateDate.setDate(dateString);
                         updateMedias();
                     }else{
                         Log.d(TAG, "already up to date");
@@ -90,7 +96,16 @@ public class VistaApi {
             }
         });
     }
+    private BroadcastReceiver updateCompleteReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            // Get extra data included in the Intent
+            String message = intent.getStringExtra("status");
+            Log.d(TAG, "update status : " + message);
+            updateDate.saveTheDate();
 
+        }
+    };
     //Http request to api to get a specific model
     private void getModels(String model, final OnRequestComplete listener){
         Request request = new Request.Builder()

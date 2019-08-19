@@ -11,6 +11,7 @@ public class UpdateDate {
     Context context;
     SharedPreferences settings;
     String prefID = "UpdateDate";
+    String saveDate;
 
     public UpdateDate(Context c) {
         context = c;
@@ -24,10 +25,12 @@ public class UpdateDate {
         }
         return false;
     }
-
-    public void saveTheDate(String date){
+    public void setDate(String date){
+        saveDate = date;
+    }
+    public void saveTheDate(){
         SharedPreferences.Editor editor = settings.edit();
-        editor.putString(prefID, date);
+        editor.putString(prefID, saveDate);
         editor.apply();
     }
 }
