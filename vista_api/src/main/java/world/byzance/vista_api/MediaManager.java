@@ -31,6 +31,9 @@ public class MediaManager {
             folder.mkdirs();
         }
     }
+    public void setFolderPath(String newfolderPath){
+        folderPath = newfolderPath;
+    }
     //get Json of current media List saved and populate mediaList
     public ArrayList<Media> getCurrentContent() {
         ArrayList<Media> mediaList  = new ArrayList<Media>();

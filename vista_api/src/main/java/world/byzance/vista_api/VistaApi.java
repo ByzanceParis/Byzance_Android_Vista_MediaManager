@@ -42,6 +42,10 @@ public class VistaApi {
         void OnRequestComplete(JSONArray response);
         void OnRequestError();
     }
+
+    public void setFolder(String folderPath){
+        mediaManager.setFolderPath(folderPath);
+    }
     //check the last update date and launch update if needed
     public void update(){
         getModels("/Updates", new OnRequestComplete() {
@@ -69,7 +73,7 @@ public class VistaApi {
 
 
     //get all media and check if they need an update
-    public void updateMedias(){
+    private void updateMedias(){
         Log.d(TAG,"Update Content");
         getModels("/Media", new OnRequestComplete() {
             public void OnRequestComplete(JSONArray response) {
@@ -88,7 +92,7 @@ public class VistaApi {
     }
 
     //Http request to api to get a specific model
-    public void getModels(String model, final OnRequestComplete listener){
+    private void getModels(String model, final OnRequestComplete listener){
         Request request = new Request.Builder()
                 .url(BaseURL + model)
                 .get()
