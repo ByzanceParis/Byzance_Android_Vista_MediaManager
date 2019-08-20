@@ -23,45 +23,37 @@ public class Media {
     String Name;
     String updateDate;
     JSONObject media;
+    private String TAG = "VistaAPI Media";
 
-    public Media(JSONObject json) {
-        try {
-            Name = (String) json.get("Name");
-            updateDate = (String) json.get("updated_at");
-            media = (JSONObject) json.get("Media");
-            Log.d("Media",media.toString());
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+
+    public Media(JSONObject json) throws JSONException {
+        Name = (String) json.get("Name");
+        updateDate = (String) json.get("updated_at");
+        media = (JSONObject) json.get("Media");
+        Log.d(TAG,media.toString());
+
     }
 
-    public void DownloadMedia(String folderPath){
-        Log.d("DownloadMedia", Name + " start ...");
-        try {
-            String url  = (String) media.get("url");
-            String ext  = (String) media.get("ext");
-            Log.d("DownloadMedia",folderPath + Name + ext);
+    public void DownloadMedia(String folderPath) throws JSONException, IOException {
+        Log.d(TAG, "Download " + Name + " start ...");
+
+        String url  = (String) media.get("url");
+        String ext  = (String) media.get("ext");
+        Log.d(TAG,"DownloadMedia" + folderPath + Name + ext);
 
 
-            OkHttpClient client = new OkHttpClient();
-            Request request = new Request.Builder().url(VistaApi.BaseURL + url).build();
-            Response response = client.newCall(request).execute();
-            if (!response.isSuccessful()) {
-                throw new IOException("Failed to download file: " + response);
-            }
-
-            FileOutputStream fos = new FileOutputStream(folderPath + Name + ext);
-            fos.write(response.body().bytes());
-            fos.close();
-            Log.d("DownloadMedia",Name + " ....complete");
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder().url(VistaApi.BaseURL + url).build();
+        Response response = client.newCall(request).execute();
+        if (!response.isSuccessful()) {
+            throw new IOException("Failed to download file: " + response);
         }
+
+        FileOutputStream fos = new FileOutputStream(folderPath + Name + ext);
+        fos.write(response.body().bytes());
+        fos.close();
+        Log.d(TAG,"Download " + Name + " ....complete");
+
 
     }
 
@@ -70,18 +62,13 @@ public class Media {
     }
 
     //delete file of current media.
-    public void deleteMedia(String folderPath) {
-        try {
-            String ext = (String) media.get("ext");
-            String fileName = folderPath + Name + ext;
+    public void deleteMedia(String folderPath) throws JSONException {
 
-            File myFile = new File(fileName);
-            if(myFile.exists())
-                myFile.delete();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        String ext = (String) media.get("ext");
+        String fileName = folderPath + Name + ext;
 
-
+        File myFile = new File(fileName);
+        if(myFile.exists())
+            myFile.delete();
     }
 }

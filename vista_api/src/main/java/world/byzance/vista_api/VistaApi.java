@@ -7,6 +7,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -15,6 +16,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -38,7 +40,7 @@ public class VistaApi {
     public VistaApi (String url, Context c){
         BaseURL = url;
         context = c;
-        Httpclient = new OkHttpClient();
+        Httpclient = new OkHttpClient.Builder() .connectTimeout(90, TimeUnit.SECONDS).readTimeout(90, TimeUnit.SECONDS) .writeTimeout(90, TimeUnit.SECONDS).build();
         updateDate = new UpdateDate(context);
         mediaManager = new MediaManager(context);
         LocalBroadcastManager.getInstance(context).registerReceiver(updateCompleteReceiver,
@@ -72,7 +74,10 @@ public class VistaApi {
             }
             @Override
             public void OnRequestError() {
-                Log.e(TAG,"An error occured");
+                Log.e(TAG,"Connection Failed");
+                Intent intent = new Intent("updateStatus");
+                intent.putExtra("status", "Connection Failed");
+                LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
             }
         });
     }
@@ -84,15 +89,14 @@ public class VistaApi {
         getModels("/Media", new OnRequestComplete() {
             public void OnRequestComplete(JSONArray response) {
                 Log.d(TAG,response.toString());
-                try {
-                    mediaManager.update(response);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+                mediaManager.update(response);
             }
             @Override
             public void OnRequestError() {
                 Log.e(TAG,"An error occured");
+                Intent intent = new Intent("updateStatus");
+                intent.putExtra("status", "Connection Failed");
+                LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
             }
         });
     }
@@ -102,8 +106,11 @@ public class VistaApi {
             // Get extra data included in the Intent
             String message = intent.getStringExtra("status");
             Log.d(TAG, "update status : " + message);
-            updateDate.saveTheDate();
-
+            if(message.equals("Complete")){
+                updateDate.saveTheDate();
+            }
+            Toast toast = Toast.makeText(context, "Update status : " + message, Toast.LENGTH_LONG);
+            toast.show();
         }
     };
     //Http request to api to get a specific model

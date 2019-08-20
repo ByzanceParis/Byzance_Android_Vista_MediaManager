@@ -10,6 +10,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -17,7 +18,7 @@ import java.util.ArrayList;
  */
 
 public class MediaManager {
-    private String TAG = "MediaManager";
+    private String TAG = "VistaAPI MediaManager";
     private Context context;
     ArrayList<Media> mediaList  = new ArrayList<Media>();
     SharedPreferences settings;
@@ -28,18 +29,11 @@ public class MediaManager {
         context = c;
         settings = context.getSharedPreferences("PREF_NAME", Context.MODE_PRIVATE);
         mediaList = getCurrentContent();
-        File folder = new File("/sdcard/Movies/VistaFolder/");
-        if (!folder.exists()) {
-            folder.mkdirs();
-        }
+
     }
     public void setFolderPath(String newfolderPath){
-
         folderPath = newfolderPath;
-        File folder = new File(newfolderPath);
-        if (!folder.exists()) {
-            folder.mkdirs();
-        }
+
     }
     //get Json of current media List saved and populate mediaList
     public ArrayList<Media> getCurrentContent() {
@@ -66,22 +60,39 @@ public class MediaManager {
     }
 
     //check all media, add new one, udpate the one that needs it and clear the others.
-    public void update(JSONArray jsonArray) throws JSONException {
-        ArrayList<Media> newMediaList  = new ArrayList<Media>();
-        for (int i=0; i < jsonArray.length(); i++) {
-            newMediaList.add(new Media(jsonArray.getJSONObject(i)));
+    public void update(JSONArray jsonArray) {
+
+        File folder = new File(folderPath);
+        if (!folder.exists()) {
+            folder.mkdirs();
         }
-        for (Media newm : newMediaList) {
-            if(isNewMedia(newm)){
-                newm.DownloadMedia(folderPath);
+        try {
+            ArrayList<Media> newMediaList = new ArrayList<Media>();
+            for (int i = 0; i < jsonArray.length(); i++) {
+                newMediaList.add(new Media(jsonArray.getJSONObject(i)));
             }
+            for (Media newm : newMediaList) {
+                if (isNewMedia(newm)) {
+                    newm.DownloadMedia(folderPath);
+                }
+            }
+            cleanOldMedia();
+            mediaList = newMediaList;
+            saveNewMediaList(jsonArray);
+            Log.d(TAG, "update complete");
+            updateStatus("Complete");
+        } catch (IOException e) {
+            updateStatus("Fail");
+            e.printStackTrace();
+        } catch (JSONException e) {
+            updateStatus("Fail");
+            e.printStackTrace();
         }
-        cleanOldMedia();
-        mediaList = newMediaList;
-        saveNewMediaList(jsonArray);
-        Log.d(TAG,"update complete");
+    }
+
+    private void updateStatus(String status){
         Intent intent = new Intent("updateStatus");
-        intent.putExtra("status", "complete");
+        intent.putExtra("status", status);
         LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
     }
 
@@ -96,7 +107,7 @@ public class MediaManager {
         }
         return true;
     }
-    private void cleanOldMedia() {
+    private void cleanOldMedia() throws JSONException {
         for (Media m : mediaList) {
             m.deleteMedia(folderPath);
         }
