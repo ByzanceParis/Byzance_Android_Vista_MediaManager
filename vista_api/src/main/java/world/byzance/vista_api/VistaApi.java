@@ -43,7 +43,7 @@ public class VistaApi {
         Httpclient = new OkHttpClient.Builder() .connectTimeout(90, TimeUnit.SECONDS).readTimeout(90, TimeUnit.SECONDS) .writeTimeout(90, TimeUnit.SECONDS).build();
         updateDate = new UpdateDate(context);
         mediaManager = new MediaManager(context);
-        LocalBroadcastManager.getInstance(context).registerReceiver(updateCompleteReceiver,
+        LocalBroadcastManager.getInstance(context).registerReceiver(updateStatusReceiver,
                 new IntentFilter("updateStatus"));
     }
     interface OnRequestComplete {
@@ -67,6 +67,8 @@ public class VistaApi {
                         updateMedias();
                     }else{
                         Log.d(TAG, "already up to date");
+                        Intent i = new Intent("world.byzance.VistaApi.complete");
+                        context.sendBroadcast(i);
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -100,7 +102,7 @@ public class VistaApi {
             }
         });
     }
-    private BroadcastReceiver updateCompleteReceiver = new BroadcastReceiver() {
+    private BroadcastReceiver updateStatusReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             // Get extra data included in the Intent
@@ -111,6 +113,9 @@ public class VistaApi {
             }
             Toast toast = Toast.makeText(context, "Update status : " + message, Toast.LENGTH_LONG);
             toast.show();
+
+            Intent i = new Intent("world.byzance.VistaApi.complete");
+            LocalBroadcastManager.getInstance(context).sendBroadcast(i);
         }
     };
     //Http request to api to get a specific model

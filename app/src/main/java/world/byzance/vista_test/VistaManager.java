@@ -21,7 +21,11 @@ public class VistaManager {
 
     private VistaManager() {
         vistaApi = new VistaApi("http://192.168.1.14:1337", getAppContext());
-        vistaApi.setFolder("/sdcard/Movies/test/");
+        vistaApi.setFolder("/sdcard/Movies/cartier/");
+    }
+
+    public void update(){
         vistaApi.update();
+
     }
 }
