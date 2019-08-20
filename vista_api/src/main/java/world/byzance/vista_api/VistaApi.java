@@ -115,7 +115,7 @@ public class VistaApi {
             toast.show();
 
             Intent i = new Intent("world.byzance.VistaApi.complete");
-            LocalBroadcastManager.getInstance(context).sendBroadcast(i);
+            context.sendBroadcast(i);
         }
     };
     //Http request to api to get a specific model
